@@ -31,7 +31,6 @@ public class MeanFilter {
 
             for (int v = 1; v < height; v ++) {
                 for (int u = 1; u < width; u ++) {
-                    // u and v should be final if used in a lambda expression
                     int finalU = u;
                     int finalV = v;
                     service.execute(() -> {
@@ -51,7 +50,7 @@ public class MeanFilter {
                             }
                         }
 
-                        // 3x3 kernel, value for each cell is 1/9
+                        // 3x3 kernel applied (cell = 1/9)
                         sumR /= 9;
                         sumG /= 9;
                         sumB /= 9;

@@ -5,7 +5,7 @@ import MeanFilter
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 print('size = ', size)
-current_time = time.time()
+currentTime = time.time()
 
 
 def main():
@@ -17,9 +17,11 @@ def main():
 
 
 def getStartTime():
-    return current_time
+    return currentTime
 
 
 if __name__ == '__main__':
-    current_time = time.time()
+    currentTime = time.time()
     main()
+
+# TO RUN: mpiexec -n 3 py main.py

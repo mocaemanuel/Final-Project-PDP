@@ -13,17 +13,18 @@ size = comm.Get_size()
 
 
 def master(rank):
-    chunk_size = (height + size - 1) // size  # Each thread will do chunk_size rows
+    # Each thread will do rowsToCompute rows
+    rowsToCompute = (height + size - 1) // size
 
-    # 0 is master
-    # Send from 1 to n - 1 the data
+    # 0 is the master
+    # Send from 1 to n - 1 the data to workers
     for i in range(1, size):
-        start = i * chunk_size
-        end = min(start + chunk_size, height)
+        start = i * rowsToCompute
+        end = min(start + rowsToCompute, height)
         comm.send((start, end), dest=i)
 
-    start = 0 * chunk_size
-    end = min(start + chunk_size, height)
+    start = 0 * rowsToCompute
+    end = min(start + rowsToCompute, height)
     print("Master with rank {} makes from {} to {}".format(rank, start, end))
 
     for v in range(1, width):
@@ -48,21 +49,21 @@ def master(rank):
 
     # Wait for all threads to finish and gather their data
     for i in range(1, size):
-        pixels_to_put = comm.recv(source=i)
-        for pixel in pixels_to_put:
+        pixelsToPut = comm.recv(source=i)
+        for pixel in pixelsToPut:
             image.putpixel((pixel[0], pixel[1]), (pixel[2], pixel[3], pixel[4]))
 
     # Save the output image
     image.save('out.jpg')
     print("Finished!")
-    time_convert(time.time() - getStartTime())
+    timeConverter(time.time() - getStartTime())
 
 
 def worker(rank):
     data = comm.recv(source=0)
     print("Worker with rank {} makes from {} to {}".format(rank, data[0], data[1]))
 
-    pixels_to_put = []
+    pixelsToPut = []
 
     for v in range(1, width):
         for u in range(data[0], data[1]):
@@ -78,16 +79,16 @@ def worker(rank):
                         sumG += rg
                         sumB += rb
 
-            # 3x3 kernel, value for each cell is 1/9
+            # 3x3 kernel applied (cell = 1/9)
             sumR //= 9
             sumG //= 9
             sumB //= 9
-            pixels_to_put.append((v, u, sumR, sumG, sumB))
+            pixelsToPut.append((v, u, sumR, sumG, sumB))
 
-    comm.send(pixels_to_put, dest=0)
+    comm.send(pixelsToPut, dest=0)
 
 
-def time_convert(sec):
+def timeConverter(sec):
     minutes = sec // 60
     sec = sec % 60
     hours = minutes // 60
